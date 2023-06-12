@@ -2,8 +2,8 @@
 
 - [Micro-services Architecture](#micro-services-architecture)
   - [What is a Micro-services Architecture?](#what-is-a-micro-services-architecture)
-  - [Use cases for a Micro-services Architecture](#use-cases-for-a-micro-services-architecture)
-  - [Who uses a Micro-services Architecture?](#who-uses-a-micro-services-architecture)
+    - [Use cases for a Micro-services Architecture](#use-cases-for-a-micro-services-architecture)
+    - [Who uses a Micro-services Architecture?](#who-uses-a-micro-services-architecture)
   - [Micro-services vs Monolith vs Two-tier architectures](#micro-services-vs-monolith-vs-two-tier-architectures)
   - [Docker](#docker)
     - [Installing Docker](#installing-docker)
@@ -36,7 +36,7 @@ Microservices architecture is an architectural style that **structures an applic
 -->
 Microservices architecture offers several **advantages**, including **improved scalability, agility, resilience, and the ability to adopt new technologies**. However, it also introduces **challenges** such as **distributed system complexity, service coordination, and network communication overhead**.
 
-## <a id="use-cases-for-a-micro-services-architecture">Use cases for a Micro-services Architecture</a>
+### <a id="use-cases-for-a-micro-services-architecture">Use cases for a Micro-services Architecture</a>
 
 Microservices architecture is well-suited for various use cases, particularly in complex and rapidly evolving systems. It's important to note that microservices architecture introduces additional complexity in terms of communication, data consistency, and operational overhead. It's crucial to carefully consider the trade-offs and assess whether the benefits outweigh the challenges for a specific use case before adopting microservices architecture.
 
@@ -58,7 +58,7 @@ Here are some common use cases where microservices architecture can be beneficia
 
 - Legacy System Modernization: Microservices can be used to gradually modernize legacy systems by breaking them down into smaller, more manageable services. This enables organizations to update and replace individual services over time without disrupting the entire system.
 
-## <a id="who-uses-a-micro---services-architecture">Who uses a Micro-services Architecture?</a>
+### <a id="who-uses-a-micro---services-architecture">Who uses a Micro-services Architecture?</a>
 
 Some notable companies and organizations that have embraced microservices include:
 
