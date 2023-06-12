@@ -6,6 +6,8 @@
   - [Who uses a Micro-services Architecture?](#who-uses-a-micro-services-architecture)
   - [Micro-services vs Monolith vs Two-tier architectures](#micro-services-vs-monolith-vs-two-tier-architectures)
   - [Docker](#docker)
+    - [Installing Docker](#installing-docker)
+    - [Using Docker](#using-docker)
 
 
 ## <a id="what-is-a-micro-services-architecture">What is a Micro-services Architecture?</a>
@@ -13,6 +15,10 @@
 Microservices architecture is an architectural style that **structures an application as a collection of small, loosely coupled, and independently deployable services**. In this approach, an application is decomposed into a set of smaller services, each responsible for a specific business capability.
 
 **Each microservice** is **self-contained** and **can be developed, deployed, and scaled independently of the others**. They communicate with each other through well-defined APIs (Application Programming Interfaces) such as REST (Representational State Transfer) or messaging protocols like AMQP (Advanced Message Queuing Protocol).
+
+![Basic Microservices architecture](https://images.contentstack.io/v3/assets/blt189c1df68c6b48d7/blt4af1f5e13d3d0150/62a5f28a92725d5bf817e9b9/Microservices-3.png?width=328&auto=webp&format=pjpg&disable=upscale&quality=100&dpr=2)
+
+![Typical AWS Microservices Architecture](https://www.devteam.space/wp-content/uploads/2018/04/image003.jpg)
 <!--
 **Key characteristics:**
 
@@ -76,6 +82,8 @@ Microservices, monolithic architecture, and two-tier architecture are different 
 
 The choice of architecture depends on various factors such as the complexity of the application, scalability requirements, development team structure, and the need for flexibility and independent deployment. Organizations often consider trade-offs and select the architecture that best suits their specific needs and constraints.
 
+![Different architectures](https://k21academy.com/wp-content/uploads/2020/10/unnamed.jpg)
+
 **Summary of their key characteristics:**
 
 |Architecture|Key Characteristics|
@@ -104,6 +112,7 @@ Docker simplifies the process of building, distributing, and running application
 
 - Docker Registry: Docker Registry is a repository for storing and distributing Docker images. The default registry is Docker Hub, but you can also set up private registries to store and share images within your organization.
 -->
+![Docker diagram](https://media.geeksforgeeks.org/wp-content/uploads/20221205115118/Architecture-of-Docker.png)
 
 **Benefits of using Docker include:**
 
@@ -118,3 +127,15 @@ Docker simplifies the process of building, distributing, and running application
 - Ecosystem and Community: Docker has a vast ecosystem of tools, libraries, and community support, making it easier to integrate with other technologies and leverage a wide range of pre-built images.
 
 Docker has revolutionized application deployment and management by providing a standardized and efficient way to package and distribute software. It has become a popular choice for developers, DevOps teams, and organizations looking to improve application deployment workflows, scalability, and infrastructure efficiency.
+
+### <a id="installing-docker">Installing Docker</a>
+
+[Official Docker documentation](https://docs.docker.com/)
+
+1. Download Docker WSL2 from [DockerHub](https://docs.docker.com/desktop/install/windows-install/).
+2. Run the downloaded 'Docker Desktop Installer.exe' file.
+3. Follow the prompts to continue the installation. Use `WSL 2` instead of `Hyper-V` option on the Configuration page.
+4. Run `wsl --update` in your terminal to add the Windows Subsystem for Linux (WSL).
+5. Ensure successful installation by running `docker --version` in your terminal to get the version of docker you have downloaded and installed eg. `Docker version 24.0.2, build cb74dfc`.
+
+### <a id="using-docker">Using Docker</a>
