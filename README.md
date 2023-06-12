@@ -16,6 +16,8 @@ Microservices architecture is an architectural style that **structures an applic
 
 **Each microservice** is **self-contained** and **can be developed, deployed, and scaled independently of the others**. They communicate with each other through well-defined APIs (Application Programming Interfaces) such as REST (Representational State Transfer) or messaging protocols like AMQP (Advanced Message Queuing Protocol).
 
+![Microservices](/images/microservices.png)
+
 ![Basic Microservices architecture](https://images.contentstack.io/v3/assets/blt189c1df68c6b48d7/blt4af1f5e13d3d0150/62a5f28a92725d5bf817e9b9/Microservices-3.png?width=328&auto=webp&format=pjpg&disable=upscale&quality=100&dpr=2)
 
 ![Typical AWS Microservices Architecture](https://www.devteam.space/wp-content/uploads/2018/04/image003.jpg)
