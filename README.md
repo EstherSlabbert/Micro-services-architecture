@@ -1,8 +1,12 @@
 # Micro-services Architecture
 
--[What is a Micro-services Architecture?](#what-is-a-micro-services-architecture)
--[Use cases for a Micro-services Architecture](#use-cases-for-a-micro-services-architecture)
--[Who uses a Micro-services Architecture?](#who-uses-a-micro-services-architecture)
+- [Micro-services Architecture](#micro-services-architecture)
+  - [What is a Micro-services Architecture?](#what-is-a-micro-services-architecture)
+  - [Use cases for a Micro-services Architecture](#use-cases-for-a-micro-services-architecture)
+  - [Who uses a Micro-services Architecture?](#who-uses-a-micro-services-architecture)
+  - [Micro-services vs Monolith vs Two-tier architectures](#micro-services-vs-monolith-vs-two-tier-architectures)
+  - [Docker](#docker)
+
 
 ## <a id="what-is-a-micro-services-architecture">What is a Micro-services Architecture?</a>
 
@@ -90,8 +94,8 @@ The choice of architecture depends on various factors such as the complexity of 
 
 Docker is an open-source platform that allows you to automate the deployment, scaling, and management of applications using containerization. It provides a way to package an application and its dependencies into a standardized unit called a container. Containers are lightweight, isolated environments that encapsulate the application code, runtime, system tools, and libraries required to run the application.
 
-Docker simplifies the process of building, distributing, and running applications by providing a consistent and reproducible environment across different systems. It achieves this through the following **key components**:
-
+Docker simplifies the process of building, distributing, and running applications by providing a consistent and reproducible environment across different systems. <!-- It achieves this through the following **key components**: -->
+<!--
 - Docker Engine: The Docker Engine is the runtime that runs and manages containers. It provides an interface to build, run, and manage containers on a host system. The engine uses kernel-level features such as namespaces, control groups, and union file systems to provide isolation and resource management.
 
 - Docker Images: Docker images are the building blocks of containers. They are created from a set of instructions called a Dockerfile, which defines the configuration, dependencies, and steps required to build an application. Images are portable and can be shared across different environments, ensuring consistency and reproducibility.
@@ -99,6 +103,7 @@ Docker simplifies the process of building, distributing, and running application
 - Docker Containers: Containers are instances of Docker images. They are isolated, lightweight, and can run independently on any system with Docker installed. Containers provide an isolated runtime environment for applications, ensuring that dependencies and configurations remain consistent, regardless of the underlying host system.
 
 - Docker Registry: Docker Registry is a repository for storing and distributing Docker images. The default registry is Docker Hub, but you can also set up private registries to store and share images within your organization.
+-->
 
 **Benefits of using Docker include:**
 
