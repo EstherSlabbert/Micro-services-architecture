@@ -87,6 +87,8 @@ Twitter: Twitter utilizes microservices to handle its real-time messaging platfo
 
 Microservices, monolithic architecture, and two-tier architecture are different architectural approaches for building applications.
 
+![Monolithic vs Microservices](/images/monolithic-vs-microservices.png)
+
 The choice of architecture depends on various factors such as the complexity of the application, scalability requirements, development team structure, and the need for flexibility and independent deployment. Organizations often consider trade-offs and select the architecture that best suits their specific needs and constraints.
 
 ![Different architectures](https://k21academy.com/wp-content/uploads/2020/10/unnamed.jpg)
