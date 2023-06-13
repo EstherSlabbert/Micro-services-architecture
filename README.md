@@ -7,7 +7,11 @@
   - [Micro-services vs Monolith vs Two-tier architectures](#micro-services-vs-monolith-vs-two-tier-architectures)
   - [Docker](#docker)
     - [Installing Docker](#installing-docker)
-    - [Using Docker](#using-docker)
+    - [Using Docker - Containerization](#using-docker---containerization)
+      - [DockerHub Account](#dockerhub-account)
+      - [Create Container Image](#create-container-image)
+      - [Use a Dockerfile to build an image](#use-a-dockerfile-to-build-an-image)
+    - [Kubernetes - Container Orchestration](#kubernetes---container-orchestration)
 
 
 ## <a id="what-is-a-micro-services-architecture">What is a Micro-services Architecture?</a>
@@ -139,5 +143,109 @@ Docker has revolutionized application deployment and management by providing a s
 3. Follow the prompts to continue the installation. Use `WSL 2` instead of `Hyper-V` option on the Configuration page.
 4. Run `wsl --update` in your terminal to add the Windows Subsystem for Linux (WSL).
 5. Ensure successful installation by running `docker --version` in your terminal to get the version of docker you have downloaded and installed eg. `Docker version 24.0.2, build cb74dfc`.
+6. Your device will need to restart. (You may need to enable 'Hardware assisted virtualization and data execution protection' in the BIOS).
+7. To test docker installation run: `docker run hello-world` in terminal. It should look for this build locally and when it does not find it it should look online for an online repo. It should return the following/similar:
+```
+Unable to find image 'hello-world:latest' locally
+latest: Pulling from library/hello-world
+719385e32844: Pulling fs layer
+719385e32844: Verifying Checksum
+719385e32844: Download complete
+719385e32844: Pull complete
+Digest: sha256:fc6cf906cbfa013e80938cdf0bb199fbdbb86d6e3e013783e5a766f50f5dbce0
+Status: Downloaded newer image for hello-world:latest
 
-### <a id="using-docker">Using Docker</a>
+Hello from Docker!
+This message shows that your installation appears to be working correctly.
+
+To generate this message, Docker took the following steps:
+ 1. The Docker client contacted the Docker daemon.
+ 2. The Docker daemon pulled the "hello-world" image from the Docker Hub.
+    (amd64)
+ 3. The Docker daemon created a new container from that image which runs the
+    executable that produces the output you are currently reading.
+ 4. The Docker daemon streamed that output to the Docker client, which sent it
+    to your terminal.
+
+To try something more ambitious, you can run an Ubuntu container with:
+ $ docker run -it ubuntu bash
+
+Share images, automate workflows, and more with a free Docker ID:
+ https://hub.docker.com/
+
+For more examples and ideas, visit:
+ https://docs.docker.com/get-started/
+```
+7. Once this has been successful you can terminate the container with `docker rm <container-id> -f` replace '<container-id>' with the container ID found using `docker ps -a`.
+
+### <a id="using-docker---containerization">Using Docker - Containerization</a>
+
+[Containerization explained](https://www.youtube.com/watch?v=0qotVMX-J5s)
+
+[Create a docker image](https://www.dataset.com/blog/create-docker-image/)
+
+#### <a id="dockerhub-account">DockerHub Account</a>
+
+1. Create a [DockerHub Account](https://hub.docker.com/) if you do not already have one.
+2. Log in to DockerHub and create a repository and give it an appropriate name.
+3. Open Git Bash or other terminal as Administrator and use `docker login --username=<DockerHubUsername> --password=<DockerHubPassword>` to set up your dockerhub login from your terminal, replace with your username and password. (Note: To do this more securely create a file `dockerhub_password.txt` that contains your password, then run `cat dockerhub_password.txt | docker login --username=<DockerHubUsername> --password-stdin`).
+4. After the initial setup in step 3 you can use `docker login` when you need to push to dockerhub.
+
+#### <a id="create-container-image">Create Container Image</a>
+
+1. Open Git Bash or other terminal as Administrator.
+2. Use `docker run -d -p 80:80 nginx` to run the default nginx docker image.
+3. To log in to your container use `docker exec -it <container-id-or-name> sh`. You may run `apt update -y` to ensure your container has access to the internet. (Note: This container has nothing installed other than Nginx. You have to install sudo with `apt install sudo` and nano with `sudo apt install nano` in order to edit the `index.html` file found by navigating using this command: `cd /usr/share/nginx/html`, then to edit use: `sudo nano index.html`.) You can use `exit` to log out of your container.
+4. You can visit [this localhost page](http://localhost/) to check if Nginx is running and working as it should from your conatiner. It should display the default Nginx page if you have not made changes to your default Nginx `index.html` file.
+5. If you already have an nginx container running and wish to copy over a new `index.html` file to display your static page use the following command: `docker cp <file-path-on-local-machine> <container-name-or-id>:<destination-path-on-container>` eg. `docker cp ./index.html e3708997c1dc:/usr/share/nginx/html/`.
+6. You can refresh the [localhost page](http://localhost/) to check that the changes have been made.
+7. Tag your updated image `docker tag <image_id> <dockerhub-username/repo-name>:<optional-version>` eg. `docker tag ec9ddc341919 eslabbert/profile:latest`, then `docker login`.
+8. Push your image to dockerhub using `docker push <dockerhub-username/repo-name>` eg. `docker push eslabbert/profile`.
+9. To run this image from dockerhub on any device stop/remove your current container using port 80, then use `docker run -d -p 80:80 <dockerhub-username/repo-name>:<tag>` eg. `docker run -d -p 80:80 eslabbert/profile:latest`.
+
+#### <a id="use-a-dockerfile-to-build-an-image">Use a Dockerfile to build an image</a>
+
+1. Create a `Dockerfile` in the same directory as your `index.html` file containing the static page you want to display. (In terminal: `cd <path-to-where-you-want-the-Dockerfile>`, then `nano Dockerfile` to create and write to it.)
+2. Write the following to the `Dockerfile`, then save and exit:
+```go
+# Use the official Nginx base image
+FROM nginx
+
+# label it with name - optional
+# Add label metadata
+LABEL MAINTAINER=Your name/company
+
+# Copy your personalized HTML file to the appropriate directory
+# COPY path/to/index.html /usr/share/nginx/html/
+COPY index.html /usr/share/nginx/html/
+
+# Expose port 80 to allow incoming traffic
+EXPOSE 80
+
+# launch app/server
+CMD ["nginx", "-g", "daemon off;"]
+```
+3. Build your docker image using: `docker build -t <image-name>:<optional-tag> <path_to_dockerfile>` eg. `docker build -t eslabbert/nginx-image .` (Note: `.` indicates your current directory and the image name should also have reference to your dockerhub profile and repo as when you push this it will create a repo or update the repo specified). This should return the following/similar:
+```
+[+] Building 0.1s (7/7) FINISHED
+ => [internal] load build definition from Dockerfile                         0.0s
+ => => transferring dockerfile: 492B                                         0.0s
+ => [internal] load .dockerignore                                            0.0s
+ => => transferring context: 2B                                              0.0s
+ => [internal] load metadata for docker.io/library/nginx:latest              0.0s
+ => [internal] load build context                                            0.0s
+ => => transferring context: 5.21kB                                          0.0s
+ => CACHED [1/2] FROM docker.io/library/nginx                                0.0s
+ => [2/2] COPY index.html /usr/share/nginx/html/                             0.0s
+ => exporting to image                                                       0.0s
+ => => exporting layers                                                      0.0s
+ => => writing image sha256:bec86b0974c1680cb2cbe93947d450a8893b01f0f4585b7  0.0s
+ => => naming to docker.io/eslabbert/tech230-nginx                           0.0s
+ ```
+4. To run the image on a container use `docker run -d --name <optional-container-name> -p 80:80 <image-name>` eg. `docker run -d --name nginx-container -p 80:80 nginx-image`. To find the image name or ID you can use `docker images` or `docker images -a`.
+5. Check Docker container ID with: `docker ps` or `docker ps -a` to ensure it is running and available.
+6. Go to [localhost page](http://localhost/) to see the static web page you set it up to host. Alternatively, log in to the container use `docker exec -it <container-id> sh`. `cd /usr/share/nginx/html` to navigate to the correct directory, then `sudo nano index.html` to check if the file is the correct one with your profile information.
+7. To stop and remove the container: `docker rm <container-id> -f`. To stop the container without removing it: `docker stop <container-id>`. To start a stopped container use: `docker start <container-id>`.
+
+
+### <a id="kubernetes---container-orchestration">Kubernetes - Container Orchestration</a>
