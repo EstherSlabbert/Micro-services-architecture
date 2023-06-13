@@ -9,8 +9,9 @@
     - [Installing Docker](#installing-docker)
     - [Using Docker - Containerization](#using-docker---containerization)
       - [DockerHub Account](#dockerhub-account)
-      - [Create Container Image](#create-container-image)
-      - [Use a Dockerfile to build an image](#use-a-dockerfile-to-build-an-image)
+      - [Create Container Image without Dockerfile](#create-container-image-without-dockerfile)
+      - [Use a Dockerfile to build an Nginx image](#use-a-dockerfile-to-build-an-nginx-image)
+      - [Use a Dockerfile to build a Node image for app](#use-a-dockerfile-to-build-a-node-image-for-app)
     - [Kubernetes - Container Orchestration](#kubernetes---container-orchestration)
 
 
@@ -187,11 +188,11 @@ For more examples and ideas, visit:
 #### <a id="dockerhub-account">DockerHub Account</a>
 
 1. Create a [DockerHub Account](https://hub.docker.com/) if you do not already have one.
-2. Log in to DockerHub and create a repository and give it an appropriate name.
+2. Log in to DockerHub and you may create a repository and give it an appropriate name.
 3. Open Git Bash or other terminal as Administrator and use `docker login --username=<DockerHubUsername> --password=<DockerHubPassword>` to set up your dockerhub login from your terminal, replace with your username and password. (Note: To do this more securely create a file `dockerhub_password.txt` that contains your password, then run `cat dockerhub_password.txt | docker login --username=<DockerHubUsername> --password-stdin`).
 4. After the initial setup in step 3 you can use `docker login` when you need to push to dockerhub.
 
-#### <a id="create-container-image">Create Container Image</a>
+#### <a id="create-container-image-without-dockerfile">Create Container Image without Dockerfile</a>
 
 1. Open Git Bash or other terminal as Administrator.
 2. Use `docker run -d -p 80:80 nginx` to run the default nginx docker image.
@@ -203,7 +204,7 @@ For more examples and ideas, visit:
 8. Push your image to dockerhub using `docker push <dockerhub-username/repo-name>` eg. `docker push eslabbert/profile`.
 9. To run this image from dockerhub on any device stop/remove your current container using port 80, then use `docker run -d -p 80:80 <dockerhub-username/repo-name>:<tag>` eg. `docker run -d -p 80:80 eslabbert/profile:latest`.
 
-#### <a id="use-a-dockerfile-to-build-an-image">Use a Dockerfile to build an image</a>
+#### <a id="use-a-dockerfile-to-build-an-nginx-image">Use a Dockerfile to build an Nginx image</a>
 
 1. Create a `Dockerfile` in the same directory as your `index.html` file containing the static page you want to display. (In terminal: `cd <path-to-where-you-want-the-Dockerfile>`, then `nano Dockerfile` to create and write to it.)
 2. Write the following to the `Dockerfile`, then save and exit:
@@ -247,5 +248,98 @@ CMD ["nginx", "-g", "daemon off;"]
 6. Go to [localhost page](http://localhost/) to see the static web page you set it up to host. Alternatively, log in to the container use `docker exec -it <container-id> sh`. `cd /usr/share/nginx/html` to navigate to the correct directory, then `sudo nano index.html` to check if the file is the correct one with your profile information.
 7. To stop and remove the container: `docker rm <container-id> -f`. To stop the container without removing it: `docker stop <container-id>`. To start a stopped container use: `docker start <container-id>`.
 
+#### <a id="use-a-dockerfile-to-build-a-node-image-for-app">Use a Dockerfile to build a Node image for app</a>
+
+[DockerHub - Node Official](https://hub.docker.com/_/node),
+[Nodejs Web server deployed in docker guide](https://www.linode.com/docs/guides/node-js-web-server-deployed-within-docker/).
+
+1. Create a `Dockerfile` in the same directory as your `app` folder containing the Sparta Provisioning Test App. (In terminal: `cd <path-to-where-you-want-the-Dockerfile>`, then `nano Dockerfile` to create and write to it.)
+2. Write the following to the Dockerfile:
+```
+# get node
+FROM node:16
+
+# owner label
+LABEL MAINTAINER=Esther@Sparta
+
+# app working directory
+WORKDIR /app
+
+# Copy the entire app folder to the container
+COPY app .
+
+# uses port 3000
+EXPOSE 3000
+
+# Install app dependencies
+RUN npm install
+
+# run app with execute commands
+CMD ["npm", "start", "daemon off;"]
+```
+3. Create docker image using `docker build -t <dockerhubusername/repo-name:optional-tag> <path/to/folder/containing/Dockerfile>` eg. `docker build -t eslabbert/sparta-app:v1 .`.
+<!--
+Should return following/similar:
+```
+[+] Building 30.2s (10/10) FINISHED
+ => [internal] load build definition from Dockerfile                         0.0s
+ => => transferring dockerfile: 366B                                         0.0s
+ => [internal] load .dockerignore                                            0.0s
+ => => transferring context: 2B                                              0.0s
+ => [internal] load metadata for docker.io/library/node:16                   1.7s
+ => [auth] library/node:pull token for registry-1.docker.io                  0.0s
+ => [1/4] FROM docker.io/library/node:16@sha256:c17fa13f3459fa43f13299ad47  21.9s
+ => => resolve docker.io/library/node:16@sha256:c17fa13f3459fa43f13299ad477  0.0s
+ => => sha256:4fbbe8e45ea152e06c94e848a410983bf047cbf78bf3c 7.24kB / 7.24kB  0.0s
+ => => sha256:a3f8e4a0ed530ff1c74aea38be7ec6c725334c7c3a5 17.58MB / 17.58MB  1.9s
+ => => sha256:a739c67a76c3ff201aa979efc9c5deb081a75f5b98 51.88MB / 51.88MB  10.6s
+ => => sha256:c17fa13f3459fa43f13299ad4779aa4740bfc83126d310fb0 776B / 776B  0.0s
+ => => sha256:6f77ef701fd20c0929642e8cef71db851c717d0ca65de 2.00kB / 2.00kB  0.0s
+ => => sha256:c722db24a050621ee87ea07acd5d066d3d6a94737c3 50.45MB / 50.45MB  3.4s
+ => => sha256:51e0d706266f768c6ed028e990dbb063fc43f602 191.89MB / 191.89MB  10.6s
+ => => sha256:f38700a2e11ea7634ce0423f6925765a846b14a257049 4.21kB / 4.21kB  3.6s
+ => => extracting sha256:c722db24a050621ee87ea07acd5d066d3d6a94737c32012f27  2.8s
+ => => sha256:b84b1175afa361fdad62b061091e2e2cc814e392d6f 34.79MB / 34.79MB  8.1s
+ => => extracting sha256:a3f8e4a0ed530ff1c74aea38be7ec6c725334c7c3a551b417d  0.6s
+ => => sha256:f36686a8f4d2b7672e5237c070a8597edb8c810453697 2.27MB / 2.27MB  8.6s
+ => => sha256:0a7d41d447c6d0a929004550aa60d7d905e6dacd8570d7f07 450B / 450B  8.8s
+ => => extracting sha256:a739c67a76c3ff201aa979efc9c5deb081a75f5b98390ee176  2.1s
+ => => extracting sha256:51e0d706266f768c6ed028e990dbb063fc43f6028827fe0f39  5.8s
+ => => extracting sha256:f38700a2e11ea7634ce0423f6925765a846b14a257049bde99  0.0s
+ => => extracting sha256:b84b1175afa361fdad62b061091e2e2cc814e392d6f6ff5f86  1.2s
+ => => extracting sha256:f36686a8f4d2b7672e5237c070a8597edb8c810453697e6357  0.0s
+ => => extracting sha256:0a7d41d447c6d0a929004550aa60d7d905e6dacd8570d7f07a  0.0s
+ => [internal] load build context                                           10.9s
+ => => transferring context: 27.93MB                                        10.9s
+ => [2/4] WORKDIR /app                                                       2.0s
+ => [3/4] COPY app .                                                         0.4s
+ => [4/4] RUN npm install                                                    3.8s
+ => exporting to image                                                       0.4s
+ => => exporting layers                                                      0.4s
+ => => writing image sha256:fdcd22e4c29da5cbd3c023ef898724dadde4ae45ffe3e0c  0.0s
+ => => naming to docker.io/eslabbert/sparta-app:v1                           0.0s
+ ```
+-->
+4. Run container using `docker run -d -p 3000:3000 <dockerhubusername/repo-name:optional-tag>` eg. `docker run -d -p 3000:3000 eslabbert/sparta-app:v1`.
+5. Check [Sparta Provisioning App page](http://localhost:3000/) and [Sparta Provisioning App fibonacci page](http://localhost:3000/fibonacci/10) in your web browser to ensure it is working.
+6. Push the image to DockerHub using `docker push <dockerhubusername/repo-name:optional-tag>` eg. `docker push eslabbert/sparta-app:v1`.
+<!-- 
+Returns following/similar:
+The push refers to repository [docker.io/eslabbert/sparta-app]
+efb9f13a74fb: Pushed
+1643c1c444b7: Pushed
+71e05c6296e7: Pushed
+47b7f8f10c48: Mounted from library/node
+ac19349f690b: Mounted from library/node
+d99b6238254e: Mounted from library/node
+bb22ae3d4d1e: Mounted from library/node
+69d98464f012: Mounted from library/node
+4e859b592d91: Mounted from library/node
+9973bce96c7e: Mounted from library/node
+c7e59965a0b4: Mounted from library/node
+v1: digest: sha256:d6c1b0c65a895025559306de4fa2baf42103cb77cd33897d8f59e38a667be0a
+e size: 2632
+-->
+7. To stop and remove container: `docker ps` and copy the container ID then `docker rm <container-id> -f` eg. `docker rm 8a79975b70d8 -f`.
 
 ### <a id="kubernetes---container-orchestration">Kubernetes - Container Orchestration</a>
