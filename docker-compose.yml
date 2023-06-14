@@ -1,0 +1,32 @@
+# version of docker compose file syntax
+version: '3.1'
+# specifies the services/components block
+services:
+  # mongodb service (database server)
+  mongodb:
+    # uses this image to launch a container
+    image: eslabbert/mongodb-image:latest
+    # container will always be restarted if it exits for any reason to ensure that the service remains running
+    restart: always
+    # ensures mongodb default port accessible
+    ports:
+      - 27017:27017
+
+  # sparta-app service (app server)
+  sparta-app:
+    # uses this image to launch a container
+    image: eslabbert/sparta-app:v1
+    # container will always be restarted if it exits for any reason to ensure that the service remains running
+    restart: always
+    # ensures Sparta Provisioning App port 3000 is accessible
+    ports:
+      - 3000:3000
+    # specifies dependency on MongoDB database service
+    depends_on:
+      - mongodb
+    # uses this environment variable to connect app to database and make the /posts page available
+    environment:
+      - DB_HOST=mongodb:27017/posts
+    # installs app dependencies and starts the app with the database connected using shell commands
+    command:
+      sh -c "npm install && npm start"

@@ -12,7 +12,11 @@
       - [Create Container Image without Dockerfile](#create-container-image-without-dockerfile)
       - [Use a Dockerfile to build an Nginx image](#use-a-dockerfile-to-build-an-nginx-image)
       - [Use a Dockerfile to build a Node image for app](#use-a-dockerfile-to-build-a-node-image-for-app)
-    - [Kubernetes - Container Orchestration](#kubernetes---container-orchestration)
+      - [Use a Dockerfile to build a MongoDB image for the database](#use-a-dockerfile-to-build-a-mongodb-image-for-the-database)
+      - [Docker Volumes](#docker-volumes)
+      - [Docker Commands](#docker-commands)
+  - [Docker Compose](#docker-compose)
+  - [Kubernetes - Container Orchestration](#kubernetes---container-orchestration)
 
 
 ## <a id="what-is-a-micro-services-architecture">What is a Micro-services Architecture?</a>
@@ -198,13 +202,14 @@ For more examples and ideas, visit:
 
 1. Open Git Bash or other terminal as Administrator.
 2. Use `docker run -d -p 80:80 nginx` to run the default nginx docker image.
-3. To log in to your container use `docker exec -it <container-id-or-name> sh`. You may run `apt update -y` to ensure your container has access to the internet. (Note: This container has nothing installed other than Nginx. You have to install sudo with `apt install sudo` and nano with `sudo apt install nano` in order to edit the `index.html` file found by navigating using this command: `cd /usr/share/nginx/html`, then to edit use: `sudo nano index.html`.) You can use `exit` to log out of your container.
-4. You can visit [this localhost page](http://localhost/) to check if Nginx is running and working as it should from your conatiner. It should display the default Nginx page if you have not made changes to your default Nginx `index.html` file.
-5. If you already have an nginx container running and wish to copy over a new `index.html` file to display your static page use the following command: `docker cp <file-path-on-local-machine> <container-name-or-id>:<destination-path-on-container>` eg. `docker cp ./index.html e3708997c1dc:/usr/share/nginx/html/`.
-6. You can refresh the [localhost page](http://localhost/) to check that the changes have been made.
-7. Tag your updated image `docker tag <image_id> <dockerhub-username/repo-name>:<optional-version>` eg. `docker tag ec9ddc341919 eslabbert/profile:latest`, then `docker login`.
-8. Push your image to dockerhub using `docker push <dockerhub-username/repo-name>` eg. `docker push eslabbert/profile`.
-9. To run this image from dockerhub on any device stop/remove your current container using port 80, then use `docker run -d -p 80:80 <dockerhub-username/repo-name>:<tag>` eg. `docker run -d -p 80:80 eslabbert/profile:latest`.
+3. To log in to your container use `docker exec -it <container-id-or-name> sh`. If you get the error `the input device is not a TTY.  If you are using mintty, try prefixing the command with 'winpty'` then use: `alias docker="winpty docker"` to resolve.
+4. You may run `apt update -y` to ensure your container has access to the internet. (Note: This container has nothing installed other than Nginx. You have to install sudo with `apt install sudo` and nano with `sudo apt install nano` in order to edit the `index.html` file found by navigating using this command: `cd /usr/share/nginx/html`, then to edit use: `sudo nano index.html`.) You can use `exit` to log out of your container.
+5. You can visit [this localhost page](http://localhost/) to check if Nginx is running and working as it should from your conatiner. It should display the default Nginx page if you have not made changes to your default Nginx `index.html` file.
+6. If you already have an nginx container running and wish to copy over a new `index.html` file to display your static page use the following command: `docker cp <file-path-on-local-machine> <container-name-or-id>:<destination-path-on-container>` eg. `docker cp ./index.html e3708997c1dc:/usr/share/nginx/html/`.
+7. You can refresh the [localhost page](http://localhost/) to check that the changes have been made.
+8. Tag your updated image `docker tag <image_id> <dockerhub-username/repo-name>:<optional-version>` eg. `docker tag ec9ddc341919 eslabbert/profile:latest`, then `docker login`.
+9. Push your image to dockerhub using `docker push <dockerhub-username/repo-name>` eg. `docker push eslabbert/profile`.
+10. To run this image from dockerhub on any device stop/remove your current container using port 80, then use `docker run -d -p 80:80 <dockerhub-username/repo-name>:<tag>` eg. `docker run -d -p 80:80 eslabbert/profile:latest`.
 
 #### <a id="use-a-dockerfile-to-build-an-nginx-image">Use a Dockerfile to build an Nginx image</a>
 
@@ -259,7 +264,7 @@ CMD ["nginx", "-g", "daemon off;"]
 2. Write the following to the Dockerfile:
 ```
 # get node
-FROM node:16
+FROM node
 
 # owner label
 LABEL MAINTAINER=Esther@Sparta
@@ -344,4 +349,213 @@ e size: 2632
 -->
 7. To stop and remove container: `docker ps` and copy the container ID then `docker rm <container-id> -f` eg. `docker rm 8a79975b70d8 -f`.
 
-### <a id="kubernetes---container-orchestration">Kubernetes - Container Orchestration</a>
+#### <a id="use-a-dockerfile-to-build-a-mongodb-image-for-the-database">Use a Dockerfile to build a MongoDB image for the database</a>
+
+1. Write this to your `Dockerfile`:
+```
+# Use the official MongoDB image as the base image
+FROM mongo:4.4
+
+# Replace the bind IP in the configuration file
+RUN sed -i 's/bindIp: 127.0.0.1/bindIp: 0.0.0.0/' /etc/mongod.conf.orig
+
+# Expose the default MongoDB port
+EXPOSE 27017
+
+# Start MongoDB with the modified configuration
+CMD ["mongod"]
+```
+2. Build image: `docker build -t eslabbert/mongodb .`
+3. Run image: `docker run -d -p 27017:27017 eslabbert/mongodb:latest`
+4. Push image: `docker push eslabbert/mongodb`
+
+Volumes: Storage of docker images for sharing between others.
+`docker volume` to see commands.
+image is immutable.
+
+#### <a id="docker-volumes">Docker Volumes</a>
+
+
+```
+docker volume COMMAND
+Commands:
+  create      Create a volume
+  inspect     Display detailed information on one or more volumes
+  ls          List volumes
+  prune       Remove all unused local volumes
+  rm          Remove one or more volumes
+```
+
+#### <a id="docker-commands">Docker Commands</a>
+
+```
+Usage:  docker [OPTIONS] COMMAND
+
+A self-sufficient runtime for containers
+
+Common Commands:
+  run         Create and run a new container from an image
+  exec        Execute a command in a running container
+  ps          List containers
+  build       Build an image from a Dockerfile
+  pull        Download an image from a registry
+  push        Upload an image to a registry
+  images      List images
+  login       Log in to a registry
+  logout      Log out from a registry
+  search      Search Docker Hub for images
+  version     Show the Docker version information
+  info        Display system-wide information
+
+Management Commands:
+  builder     Manage builds
+  buildx*     Docker Buildx (Docker Inc., v0.10.5)
+  compose*    Docker Compose (Docker Inc., v2.18.1)
+  container   Manage containers
+  context     Manage contexts
+  dev*        Docker Dev Environments (Docker Inc., v0.1.0)
+  extension*  Manages Docker extensions (Docker Inc., v0.2.19)
+  image       Manage images
+  init*       Creates Docker-related starter files for your project (Docker Inc., v0.1.0-beta.4)
+  manifest    Manage Docker image manifests and manifest lists
+  network     Manage networks
+  plugin      Manage plugins
+  sbom*       View the packaged-based Software Bill Of Materials (SBOM) for an image (Anchore Inc., 0.6.0)
+  scan*       Docker Scan (Docker Inc., v0.26.0)
+  scout*      Command line tool for Docker Scout (Docker Inc., v0.12.0)
+  system      Manage Docker
+  trust       Manage trust on Docker images
+  volume      Manage volumes
+
+Swarm Commands:
+  swarm       Manage Swarm
+
+Commands:
+  attach      Attach local standard input, output, and error streams to a running container
+  commit      Create a new image from a container's changes
+  cp          Copy files/folders between a container and the local filesystem
+  create      Create a new container
+  diff        Inspect changes to files or directories on a container's filesystem
+  events      Get real time events from the server
+  export      Export a container's filesystem as a tar archive
+  history     Show the history of an image
+  import      Import the contents from a tarball to create a filesystem image
+  inspect     Return low-level information on Docker objects
+  kill        Kill one or more running containers
+  load        Load an image from a tar archive or STDIN
+  logs        Fetch the logs of a container
+  pause       Pause all processes within one or more containers
+  port        List port mappings or a specific mapping for the container
+  rename      Rename a container
+  restart     Restart one or more containers
+  rm          Remove one or more containers
+  rmi         Remove one or more images
+  save        Save one or more images to a tar archive (streamed to STDOUT by default)
+  start       Start one or more stopped containers
+  stats       Display a live stream of container(s) resource usage statistics
+  stop        Stop one or more running containers
+  tag         Create a tag TARGET_IMAGE that refers to SOURCE_IMAGE
+  top         Display the running processes of a container
+  unpause     Unpause all processes within one or more containers
+  update      Update configuration of one or more containers
+  wait        Block until one or more containers stop, then print their exit codes
+
+Global Options:
+      --config string      Location of client config files (default
+                           "C:\\Users\\super\\.docker")
+  -c, --context string     Name of the context to use to connect to the
+                           daemon (overrides DOCKER_HOST env var and
+                           default context set with "docker context use")
+  -D, --debug              Enable debug mode
+  -H, --host list          Daemon socket to connect to
+  -l, --log-level string   Set the logging level ("debug", "info",
+                           "warn", "error", "fatal") (default "info")
+      --tls                Use TLS; implied by --tlsverify
+      --tlscacert string   Trust certs signed only by this CA (default
+                           "C:\\Users\\super\\.docker\\ca.pem")
+      --tlscert string     Path to TLS certificate file (default
+                           "C:\\Users\\super\\.docker\\cert.pem")
+      --tlskey string      Path to TLS key file (default
+                           "C:\\Users\\super\\.docker\\key.pem")
+      --tlsverify          Use TLS and verify the remote
+  -v, --version            Print version information and quit
+
+Run 'docker COMMAND --help' for more information on a command.
+
+For more help on how to use Docker, head to https://docs.docker.com/go/guides/
+```
+Tags:
+
+`-p`: ports
+`-d`: detached
+`-it`: interactive mode
+`sh`: shell
+`-f`: force (eg. if running will force it to close and end in order to remove)
+
+Most used commands:
+
+`docker rmi <image-id-or-name> -f`: remove image
+`docker rm <container-id-or-name> -f`: remove container
+`docker exec -it <container-id> sh`: allows you to log in/interact inside container with shell
+`alias docker="winpty docker"`: Resolves TTY issue when trying to log in/interact with container
+`docker build -t <image-name>:<optional-tag> <path/to/Dockerfile>`: builds an image from a Dockerfile
+`docker run -d -p <host-port-number>:<container-port-number> <image-name-or-id>`: runs container from docker image
+`docker push <image-name>`: pushes image to docker repo
+
+## <a id="docker-compose">Docker Compose</a>
+
+Docker Compose is a tool that allows you to define and manage multi-container Docker applications. It simplifies the process of defining, configuring, and running multiple Docker containers as a cohesive application. It uses a file called `docker-compose.yml` file to do this.
+
+![Docker Compose](/images/docker-compose.png)
+
+**Commands:**
+
+- `docker compose up -d`: starts and manages containers in detached mode (without logs).
+- `docker compose up`: starts and manages containers with logs.
+- `docker compose down`: stops and removes containers associated.
+- `docker compose down -v`: stops and removes containers and volumes associated.
+
+`docker-compose.yml`: YAML script to deploy app & db containers and connect them so that you can see the [app](http://localhost:3000), [fibonacci](http://localhost:3000/fibonacci/10) & [/posts](http://localhost:3000/posts) pages on port 3000. <!-- [db](http://localhost:27017/) says "It looks like you are trying to access MongoDB over HTTP on the native driver port." -->
+
+1. Create a `docker-compose.yml` file containing the following:
+```yaml
+# version of docker compose file syntax
+version: '3.1'
+# specifies the services/components block
+services:
+  # mongodb service (database server)
+  mongodb:
+    # uses this image to launch a container
+    image: eslabbert/mongodb-image:latest
+    # container will always be restarted if it exits for any reason to ensure that the service remains running
+    restart: always
+    # ensures mongodb default port accessible
+    ports:
+      - 27017:27017
+
+  # sparta-app service (app server)
+  sparta-app:
+    # uses this image to launch a container
+    image: eslabbert/sparta-app:v1
+    # container will always be restarted if it exits for any reason to ensure that the service remains running
+    restart: always
+    # ensures Sparta Provisioning App port 3000 is accessible
+    ports:
+      - 3000:3000
+    # specifies dependency on MongoDB database service
+    depends_on:
+      - mongodb
+    # uses this environment variable to connect app to database and make the /posts page available
+    environment:
+      - DB_HOST=mongodb:27017/posts
+    # installs app dependencies and starts the app with the database connected using shell commands
+    command:
+      sh -c "npm install && npm start"
+```
+2. Run with `docker compose up -d` in the directory containing your `docker-compose.yml` file.
+3. Check pages in web browser.
+4. Remove with `docker compose down`.
+
+## <a id="kubernetes---container-orchestration">Kubernetes - Container Orchestration</a>
+
+[Kubernetes](https://kubernetes.io/)
