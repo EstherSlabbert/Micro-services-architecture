@@ -10,6 +10,7 @@
     - [Using Docker - Containerization](#using-docker---containerization)
       - [DockerHub Account](#dockerhub-account)
       - [Create Container Image without Dockerfile](#create-container-image-without-dockerfile)
+      - [Dockerfiles](#dockerfiles)
       - [Use a Dockerfile to build an Nginx image](#use-a-dockerfile-to-build-an-nginx-image)
       - [Use a Dockerfile to build a Node image for app](#use-a-dockerfile-to-build-a-node-image-for-app)
       - [Use a Dockerfile to build a MongoDB image for the database](#use-a-dockerfile-to-build-a-mongodb-image-for-the-database)
@@ -216,6 +217,14 @@ For more examples and ideas, visit:
 9. Push your image to dockerhub using `docker push <dockerhub-username/repo-name>` eg. `docker push eslabbert/profile`.
 10. To run this image from dockerhub on any device stop/remove your current container using port 80, then use `docker run -d -p 80:80 <dockerhub-username/repo-name>:<tag>` eg. `docker run -d -p 80:80 eslabbert/profile:latest`.
 
+#### <a id="dockerfiles">Dockerfiles</a>
+
+Each `Dockerfile` command (each line in a `Dockerfile`) is an image layer. Each image is built from these layers. (To see image layer use `docker history <image-name>`.) Each layer is cached by Docker on your local system, which makes building the image much faster. If a layer changes then all the following layers are re-created as well. Best Practice is to order your commands from least changed to most changed commands in your Dockerfile to take advantage of caching.
+
+Also make use of a `.dockerignore` file to exclude unnecessary files from copying over (works similarly to `.gitignore` file).
+
+Make use of multi-stage builds (e.g. build stage, run stage) to structure to use temporary images to get to your final image, which will be kept as an artifact.
+
 #### <a id="use-a-dockerfile-to-build-an-nginx-image">Use a Dockerfile to build an Nginx image</a>
 
 1. Create a `Dockerfile` in the same directory as your `index.html` file containing the static page you want to display. (In terminal: `cd <path-to-where-you-want-the-Dockerfile>`, then `nano Dockerfile` to create and write to it.)
@@ -381,6 +390,9 @@ CMD ["mongod"]
 
 [Jfrog: 3 steps to secure docker containers](https://jfrog.com/devops-tools/article/3-steps-to-securing-your-docker-container-deployments/#:~:text=Docker%20containers%20provide%20a%20more,a%20significantly%20reduced%20attack%20surface.)
 
+Use official images and specific versions, with the smallest size necessary (like alpine light-weight distribution) to reduce security vulnerabilities that come from using larger images.
+
+Specify the least privileged user to run the container.
 
 #### <a id="docker-volumes">Docker Volumes</a>
 
@@ -569,9 +581,9 @@ services:
 
 ## <a id="kubernetes---container-orchestration">Kubernetes - Container Orchestration</a>
 
-Kubernetes, also known as K8s, is an **open-source container orchestration tool/framework**, in other words, a **system** for **automating deployment, scaling, and management of containerized applications**. Developed by Google.
+Kubernetes, also known as K8s, is an **open-source container orchestration tool/framework**, in other words, a **system** for **automating deployment, scaling, and management of containerized applications**. Developed by Google. It is very powerful and complex.
 
-It groups containers that make up an application into logical units for easy management and discovery. Helping you to manage containerized applications in different environments (i.e. physical, virtual, cloud, or hybrid environments).
+It groups containers that make up an application into logical units for easy management and discovery. Helping you to manage containerized applications in different environments (i.e. physical, virtual, cloud, or hybrid environments). It supports auto-scaling and has built-in monitoring, you can also configure load-balancing manually. You use CLI tool called kubectl to interact with K8s.
 
 [Kubernetes official page](https://kubernetes.io/)
 
@@ -579,16 +591,15 @@ It groups containers that make up an application into logical units for easy man
 
 As number of microservices increase in an application it becomes more difficult and complex or even impossible to manage these containers across multiple environments using scripts or self-made tools. This is what brought about container orchestration technologies like K8.
 
-Using K8/other orchestration tools provides:
+Using K8s/other orchestration tools provides:
 
-- High Availability (i.e. no downtime, always user-accessible)
-- Scalability (i.e. high performance, loads fast and users have high response rate from application)
-- Disaster Recovery (i.e. backup and restore for if an infrastructure has problems like data is lost or the servers explode or something bad happens with the service center the infrastructure has some kind of mechanism to backup and restore the data to the lastest state so the application doesn't lose any data and the containerized app can run from the latest state after recovery)
+- **High Availability** (i.e. no downtime, always user-accessible)
+- **Scalability** (i.e. high performance, loads fast and users have high response rate from application)
+- **Disaster Recovery** (i.e. backup and restore for if an infrastructure has problems like data is lost or the servers explode or something bad happens with the service center the infrastructure has some kind of mechanism to backup and restore the data to the lastest state so the application doesn't lose any data and the containerized app can run from the latest state after recovery)
 
 ### <a id="kubernetes-basic-architecture">Kubernetes Basic Architecture</a>
 
-
-**Components of Kubernetes Architecture:**
+**Components of Kubernetes Architecture (K8s cluster):**
 
 - **Master Node(s)**: connects to, runs and manages worker nodes (much more important than worker nodes, must have a back up in production as if you lose a master node you lose the access to the cluster).
 - **Worker Nodes**: have containers or microservices or applications running on them and Kubelet process (which is the primary "node agent"). (bigger, most load, more resources).
@@ -598,34 +609,38 @@ Using K8/other orchestration tools provides:
 
 **Master Node Processes:**
 
-- **API server**, which is the entry point to the K8s cluster for UI, API and CLI. (Kubernetes Configuration, in declarative form (K8 will try to meet the requirements by comparing desired and actual state), goes through this. Requests must be in YAML or JSON format).
+- **API server**, which is the entry point to the K8s cluster for UI, API and CLI. (Kubernetes Configuration, in declarative form (meaning K8 will try to meet the requirements by comparing desired and actual state), goes through this. Requests must be in YAML or JSON format).
 -  **Controller manager**, which keeps track of what is happening in cluster (if repairs are needed or container dies and needs to be restarted etc.).
 -  **Scheduler**, an intelligent process that decides which node the next container should be scheduled on, based on the internal resources on the worker nodes and the load that container needs, i.e. schedules containers on different nodes based on the work load and available server resources on each node/ensures Pods placement.
 -  **etcd**, key-value storage that holds, at any time, the current state (i.e. a snapshot) of the Kubernetes cluster (has the config data and status data of each node and container). Using this snapshot you can recover the whole state of the cluster.
 
-Basic Concepts:
+**Basic Concepts:**
 
 ![K8s Concepts](/images/kubernetes-concepts.png)
 
-- Pod = ephemeral component of Kubernetes that is a wrapper for a container(s) that manages the container(s) running inside itself without our intervention. (e.g. if a container dies it will restart it automatically)
+- **Pod** = ephemeral component of Kubernetes that is a wrapper for a container(s) that manages the container(s) running inside itself without our intervention. (e.g. if a container dies it will restart it automatically)
 
 Each worker node can have multiple pods. Each pod could have multiple containers, good practice is to have one application (like database, app, server, message broker) per pod (an app with helper containers if necessary).
 We do not create or configure containers inside Kubernetes cluster, we only deal with the pods which is an abstraction layer over containers.
 
-ephemeral = can die frequently.
+Ephemeral = can die frequently.
 
 Each time a pod dies it is restarted, creating a new pod, assigned a new IP address. So these pods have dynamic IP addresses, which is inconvenient if these pods need to communicate with other pods.
 
-- Service = **permanent IP address**, which is an alternative or substitute to the pod's dynamic IP addresses, which sit in front of each pod and remains constant (as the lifecycle is not tied to the pod's) to allow communication between pods. Also works as a **load balancer**.
-
+- **Service** = **permanent IP address**, which is an alternative or substitute to the pod's dynamic IP addresses, which sit in front of each pod and remains constant (as the lifecycle is not tied to the pod's) to allow communication between pods. Also works as a **load balancer**.
 
 ### <a id="k8-self-healing">K8 Self-healing</a>
 
- A ReplicaSet then fulfills its purpose by creating and deleting Pods as needed to reach the desired number.
+A ReplicaSet then fulfills its purpose by creating and deleting Pods as needed to reach the desired number.
 
  ### <a id="k8-commands">K8 Commands</a>
 
- Check version of Kubernetes `kubectl version --client` (Note: Will show this `WARNING: This version information is deprecated and will be replaced with the output from kubectl version --short.`.You can ignore this warning. You are only checking the version of kubectl that you have installed.)
+Check version of Kubernetes `kubectl version --client` (Note: Will show this `WARNING: This version information is deprecated and will be replaced with the output from kubectl version --short.`.You can ignore this warning. You are only checking the version of kubectl that you have installed.)
 
- Ensure a cluster is running with `kubectl get service`.
+Ensure a cluster is running with `kubectl get service`.
 
+`kubectl get svc`: get service info
+`kubectl get deployment <name-deployment>` or `kubectl get deploy`: deployment info
+`kubectl create -f <.yml>`: runs .yml file to create K8s cluster
+`kubectl get pods`: get pods info
+`kubectl get rs`: get replica set info
