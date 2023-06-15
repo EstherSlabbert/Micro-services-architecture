@@ -23,6 +23,7 @@
     - [Kubernetes Basic Architecture](#kubernetes-basic-architecture)
     - [K8 Self-healing](#k8-self-healing)
     - [K8 Commands](#k8-commands)
+    - [K8 Deploy Sparta App Cluster](#k8-deploy-sparta-app-cluster)
 
 
 ## <a id="what-is-a-micro-services-architecture">What is a Micro-services Architecture?</a>
@@ -390,9 +391,13 @@ CMD ["mongod"]
 
 [Jfrog: 3 steps to secure docker containers](https://jfrog.com/devops-tools/article/3-steps-to-securing-your-docker-container-deployments/#:~:text=Docker%20containers%20provide%20a%20more,a%20significantly%20reduced%20attack%20surface.)
 
+[Best Practice Docker video](https://www.youtube.com/watch?v=8vXoMqWgbQQ)
+
 Use official images and specific versions, with the smallest size necessary (like alpine light-weight distribution) to reduce security vulnerabilities that come from using larger images.
 
 Specify the least privileged user to run the container.
+
+Scan images on DockerHub.
 
 #### <a id="docker-volumes">Docker Volumes</a>
 
@@ -594,7 +599,7 @@ As number of microservices increase in an application it becomes more difficult 
 Using K8s/other orchestration tools provides:
 
 - **High Availability** (i.e. no downtime, always user-accessible)
-- **Scalability** (i.e. high performance, loads fast and users have high response rate from application)
+- **Scalability** (i.e. high performance, loads fast and users have high response rate from application) - using labels and selectors
 - **Disaster Recovery** (i.e. backup and restore for if an infrastructure has problems like data is lost or the servers explode or something bad happens with the service center the infrastructure has some kind of mechanism to backup and restore the data to the lastest state so the application doesn't lose any data and the containerized app can run from the latest state after recovery)
 
 ### <a id="kubernetes-basic-architecture">Kubernetes Basic Architecture</a>
@@ -610,9 +615,9 @@ Using K8s/other orchestration tools provides:
 **Master Node Processes:**
 
 - **API server**, which is the entry point to the K8s cluster for UI, API and CLI. (Kubernetes Configuration, in declarative form (meaning K8 will try to meet the requirements by comparing desired and actual state), goes through this. Requests must be in YAML or JSON format).
--  **Controller manager**, which keeps track of what is happening in cluster (if repairs are needed or container dies and needs to be restarted etc.).
--  **Scheduler**, an intelligent process that decides which node the next container should be scheduled on, based on the internal resources on the worker nodes and the load that container needs, i.e. schedules containers on different nodes based on the work load and available server resources on each node/ensures Pods placement.
--  **etcd**, key-value storage that holds, at any time, the current state (i.e. a snapshot) of the Kubernetes cluster (has the config data and status data of each node and container). Using this snapshot you can recover the whole state of the cluster.
+- **Controller manager**, which keeps track of what is happening in cluster (if repairs are needed or container dies and needs to be restarted etc.).
+- **Scheduler**, an intelligent process that decides which node the next container should be scheduled on, based on the internal resources on the worker nodes and the load that container needs, i.e. schedules containers on different nodes based on the work load and available server resources on each node/ensures Pods placement.
+- **etcd**, key-value storage that holds, at any time, the current state (i.e. a snapshot) of the Kubernetes cluster (has the config data and status data of each node and container). Using this snapshot you can recover the whole state of the cluster.
 
 **Basic Concepts:**
 
@@ -633,14 +638,97 @@ Each time a pod dies it is restarted, creating a new pod, assigned a new IP addr
 
 A ReplicaSet then fulfills its purpose by creating and deleting Pods as needed to reach the desired number.
 
- ### <a id="k8-commands">K8 Commands</a>
+### <a id="k8-commands">K8 Commands</a>
+
+[K8 Configuration docs](https://kubernetes.io/docs/concepts/configuration/)
 
 Check version of Kubernetes `kubectl version --client` (Note: Will show this `WARNING: This version information is deprecated and will be replaced with the output from kubectl version --short.`.You can ignore this warning. You are only checking the version of kubectl that you have installed.)
 
-Ensure a cluster is running with `kubectl get service`.
-
 `kubectl get svc`: get service info
 `kubectl get deployment <name-deployment>` or `kubectl get deploy`: deployment info
-`kubectl create -f <.yml>`: runs .yml file to create K8s cluster
+`kubectl create -f <.yml>`: runs .yml file to create K8s cluster (`-f` = file)
 `kubectl get pods`: get pods info
 `kubectl get rs`: get replica set info
+`kubectl delete pod <pod-name>`: deletes pod, but as it is self-healing it spins up a new pod immediately.
+`kubectl edit deploy <name-deployment>`: opens deployment file in notepad to make changes, save and exit, without taking server down.
+`kubectl describe deploy <name-deployment>`: human-readable logs on deployment
+`kubectl describe svc <name-svc>`: human-readble logs on service
+`kubectl delete deployment <deployment-name>`: delete deployment
+`kubectl delete service <service-name>`: delete service
+
+### <a id="k8-deploy-sparta-app-cluster">K8 Deploy Sparta App Cluster</a>
+
+![K8s Cluster Sparta App](/images/k8s-cluster.png)
+
+1. Ensure a cluster is running with `kubectl get service`.
+2. Create `deployment.yml` file and `service.yml` file.
+`deployment.yml`:
+```yaml
+# api used for deployment
+apiVersion: apps/v1
+# pod - service what kind of serivce/object
+kind: Deployment
+# case insensitive metadata
+metadata:
+  # name of deployment
+  name: sparta-app-deployment
+  labels:
+    app: sparta-app
+# specifications for deployment
+spec:
+  # creates 3 replicas (pods) of this set with pods/instances
+  replicas: 3
+  # connection with labels
+  selector:
+    matchLabels:
+      # looks for label & match with k8 services
+      app: sparta-app
+  # template to use its label for k8 service to launch
+  template:
+    metadata:
+    # label
+      labels:
+        # label connects to service or any other k8 components
+        app: sparta-app
+    # define container specifications
+    spec:
+      containers:
+      - name: sparta-app
+        # image of app from DockerHub
+        image: eslabbert/sparta-app:v1
+        ports:
+        # exposes this port
+        - containerPort: 3000
+```
+`service.yml`
+```yaml
+# select type of API version
+apiVersion: v1
+# type of service/object
+kind: Service
+# metadata for name
+metadata:
+  # name of service
+  name: sparta-app-svc
+  # sre - keep private for each team, but as not in production use default
+  namespace: default
+# specification to include ports selector to connect to the
+spec:
+  # create NodePort type of deployment for external access
+  # load balancer for local cluster
+  type: NodePort
+  # define selector and label to connect nginx deployment
+  selector:
+    # label connect to nginx deployment
+    app: sparta-app
+  # port mapping
+  ports:
+  - protocol: TCP
+    # range 30000-32767 to be accessed externally
+    nodePort: 30001
+    # internal communicating ports
+    port: 3000
+    targetPort: 3000
+```
+3. Run deployment with `kubectl create -f deployment`, then run service with `kubectl create -f service.yml`.
+4. Check web browser for http://localhost:\<specified-port-between-30000-32767-in-service.yml\>.
