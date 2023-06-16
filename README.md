@@ -709,8 +709,10 @@ spec:
         command: ["sh", "-c"]
         args:
           - |
-            node /app/seeds/seed.js
-            npm restart /app/app.js --update-env
+            cd /app
+            npm stop --if-present
+            node seeds/seed.js
+            npm restart app.js --update-env
 ```
 `service.yml`
 ```yaml
