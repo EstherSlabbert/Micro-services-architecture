@@ -808,7 +808,7 @@ spec:
       targetPort: 27017
 ```
 3. Run deployment and service `kubectl create -f mongo-deployment-and-service.yml` then run the app's deployment and service files.
-4. Check web browser for http://localhost:\<specified-port-between-30000-32767-in-service.yml\>/posts.
+4. Check web browser for [Sparta Provisioning Test App/posts page](http://localhost:\30001/posts).
 
 Note: To delete all these services and deployments: `kubectl delete deploy sparta-app-deployment mongo-deployment | kubectl delete svc sparta-app-svc mongo-service`.
 <!-- `cd Documents/tech_230_sparta/Microservices/kubernetes`, then to create services and deployments: `kubectl create -f mongo-deployment-and-service.yml` and `kubectl create -f sparta-app-deployment-and-service.yml`
