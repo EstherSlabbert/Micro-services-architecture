@@ -24,6 +24,7 @@
     - [K8 Self-healing](#k8-self-healing)
     - [K8 Commands](#k8-commands)
     - [K8 Deploy Sparta App Cluster](#k8-deploy-sparta-app-cluster)
+    - [K8 Deploy MongoDB and connect to App Cluster](#k8-deploy-mongodb-and-connect-to-app-cluster)
 
 
 ## <a id="what-is-a-micro-services-architecture">What is a Micro-services Architecture?</a>
@@ -699,6 +700,17 @@ spec:
         ports:
         # exposes this port
         - containerPort: 3000
+# Only add the following if also launching database:
+        # adds the environment variable to connect with mongodb
+        env:
+        - name: DB_HOST
+          # references the internal mongo service IP
+          value: mongo-service:27017/posts
+        command: ["sh", "-c"]
+        args:
+          - |
+            node /app/seeds/seed.js
+            npm restart /app/app.js --update-env
 ```
 `service.yml`
 ```yaml
@@ -730,5 +742,56 @@ spec:
     port: 3000
     targetPort: 3000
 ```
-3. Run deployment with `kubectl create -f deployment`, then run service with `kubectl create -f service.yml`.
+3. Run deployment with `kubectl create -f deployment.yml`, then run service with `kubectl create -f service.yml`.
 4. Check web browser for http://localhost:\<specified-port-between-30000-32767-in-service.yml\>.
+
+### <a id="k8-deploy-mongodb-and-connect-to-app-cluster">K8 Deploy MongoDB and connect to App Cluster</a>
+
+1. Ensure a cluster is running with `kubectl get service`. <!-- Create encoded username and password, respectively: `echo -n admin | base64` and `echo -n password | base64` -->
+2. Create `deployment-and-service.yml` file.
+`deployment-and-service.yml`:
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongo-deployment
+  labels:
+    # label selector
+    db: mongo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      db: mongo
+  template:
+    metadata:
+      labels:
+        db: mongo
+    spec:
+      containers:
+      - name: mongodb
+        image: eslabbert/mongodb-image:latest
+        ports:
+        - containerPort: 27017
+        env:
+        - name: DB_HOST
+          value: mongo-service:27017/posts
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongo-service
+  namespace: default
+spec:
+  selector:
+    # label connects service to pods with same label (send requests to pods)
+    db: mongo
+  ports:
+    - protocol: TCP
+      # Service port, accessible at this port
+      port: 27017
+      # same as containerPort of deployment/stateful set
+      targetPort: 27017
+```
+3. Run deployment and service `kubectl create -f deployment-and-service.yml` then run the app's deployment and service.
+4. Check web browser for http://localhost:\<specified-port-between-30000-32767-in-service.yml\>/posts.
