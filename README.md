@@ -645,25 +645,37 @@ A ReplicaSet then fulfills its purpose by creating and deleting Pods as needed t
 
 Check version of Kubernetes `kubectl version --client` (Note: Will show this `WARNING: This version information is deprecated and will be replaced with the output from kubectl version --short.`.You can ignore this warning. You are only checking the version of kubectl that you have installed.)
 
-`kubectl get svc`: get service info
-`kubectl get deployment <name-deployment>` or `kubectl get deploy`: deployment info
-`kubectl create -f <.yml>`: runs .yml file to create K8s cluster (`-f` = file)
-`kubectl get pods`: get pods info
-`kubectl get rs`: get replica set info
+`kubectl get svc`: get service info.
+
+`kubectl get deployment <name-deployment>` or `kubectl get deploy`: deployment info, which can be for a specific deployment or all deployments.
+
+`kubectl create -f <.yml>`: runs .yml file to create K8s cluster (`-f` = file).
+
+`kubectl get pods`: get pods info.
+
+`kubectl get rs`: get replica set info.
+
 `kubectl delete pod <pod-name>`: deletes pod, but as it is self-healing it spins up a new pod immediately.
+
 `kubectl edit deploy <name-deployment>`: opens deployment file in notepad to make changes, save and exit, without taking server down.
-`kubectl describe deploy <name-deployment>`: human-readable logs on deployment
-`kubectl describe svc <name-svc>`: human-readble logs on service
-`kubectl delete deployment <deployment-name>`: delete deployment
-`kubectl delete service <service-name>`: delete service
+
+`kubectl describe deploy <name-deployment>`: human-readable logs on deployment.
+
+`kubectl describe svc <name-svc>`: human-readble logs on service.
+
+`kubectl delete deployment <deployment-name>`: delete deployment.
+
+`kubectl delete service <service-name>`: delete service.
+
+`kubectl logs -p <pod-name>`: get a specific pod's logs.
 
 ### <a id="k8-deploy-sparta-app-cluster">K8 Deploy Sparta App Cluster</a>
 
 ![K8s Cluster Sparta App](/images/k8s-cluster.png)
 
 1. Ensure a cluster is running with `kubectl get service`.
-2. Create `deployment.yml` file and `service.yml` file.
-`deployment.yml`:
+2. Create `app-deployment.yml` file and `app-service.yml` file.
+`app-deployment.yml`:
 ```yaml
 # api used for deployment
 apiVersion: apps/v1
@@ -714,7 +726,7 @@ spec:
             node seeds/seed.js
             npm restart app.js --update-env
 ```
-`service.yml`
+`app-service.yml`:
 ```yaml
 # select type of API version
 apiVersion: v1
@@ -744,14 +756,14 @@ spec:
     port: 3000
     targetPort: 3000
 ```
-3. Run deployment with `kubectl create -f deployment.yml`, then run service with `kubectl create -f service.yml`.
+3. Run deployment with `kubectl create -f app-deployment.yml`, then run service with `kubectl create -f app-service.yml`.
 4. Check web browser for http://localhost:\<specified-port-between-30000-32767-in-service.yml\>.
 
 ### <a id="k8-deploy-mongodb-and-connect-to-app-cluster">K8 Deploy MongoDB and connect to App Cluster</a>
 
 1. Ensure a cluster is running with `kubectl get service`. <!-- Create encoded username and password, respectively: `echo -n admin | base64` and `echo -n password | base64` -->
-2. Create `deployment-and-service.yml` file.
-`deployment-and-service.yml`:
+2. Create `mongo-deployment-and-service.yml` file.
+`mongo-deployment-and-service.yml`:
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -795,5 +807,9 @@ spec:
       # same as containerPort of deployment/stateful set
       targetPort: 27017
 ```
-3. Run deployment and service `kubectl create -f deployment-and-service.yml` then run the app's deployment and service.
+3. Run deployment and service `kubectl create -f mongo-deployment-and-service.yml` then run the app's deployment and service files.
 4. Check web browser for http://localhost:\<specified-port-between-30000-32767-in-service.yml\>/posts.
+
+Note: To delete all these services and deployments: `kubectl delete deploy sparta-app-deployment mongo-deployment | kubectl delete svc sparta-app-svc mongo-service`.
+<!-- `cd Documents/tech_230_sparta/Microservices/kubernetes`, then to create services and deployments: `kubectl create -f mongo-deployment-and-service.yml` and `kubectl create -f sparta-app-deployment-and-service.yml`
+-->
