@@ -1,0 +1,58 @@
+# api used for deployment
+apiVersion: apps/v1
+# pod - service what kind of serivce/object
+kind: Deployment
+# case insensitive metadata
+metadata:
+  # name of deployment
+  name: nginx-deployment
+# specifications for deployment
+spec:
+  selector:
+    matchLabels:
+      # looks for label & match with k8 services
+      app: nginx
+  # creates 3 replicas (pods) of this set with pods/instances
+  replicas: 3
+  # template to use its label for k8 service to launch
+  template:
+    metadata:
+    # label
+      labels:
+        # label connects to service or any other k8 components
+        app: nginx
+    # define container specifications
+    spec:
+      containers:
+      - name: nginx
+        image: eslabbert/tech230-nginx:latest
+        ports:
+        # exposes this port
+        - containerPort: 80
+---
+# select type of API version
+apiVersion: v1
+# type of service/object
+kind: Service
+# metadata for name
+metadata:
+  # name of service
+  name: nginx-svc
+  # sre - keep private for each team, but as not in production use default
+  namespace: default
+# specification to include ports selector to connect to the
+spec:
+  # port mapping
+  ports:
+  # range 30000-32768
+  - nodePort: 30001
+    port: 80
+    targetPort: 80
+  # define selector and label to connect nginx deployment
+  selector:
+    # label connect to nginx deployment
+    app: nginx
+  # create NodePort type of deployment
+  # load balancer for local cluster
+  type: NodePort
+    
